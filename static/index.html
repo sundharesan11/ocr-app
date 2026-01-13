@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Form Digitizer | OCR Pipeline</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🏥</span>
+                <h1>Medical Form Digitizer</h1>
+            </div>
+            <p class="tagline">Transform handwritten medical forms into structured digital PDFs</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Upload Card -->
+            <div class="card upload-card" id="uploadCard">
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-content">
+                        <div class="dropzone-icon">📄</div>
+                        <h2>Drag & drop your form here</h2>
+                        <p>or click to browse files</p>
+                        <span class="file-types">Supports: PDF, JPG, PNG</span>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                </div>
+            </div>
+
+            <!-- File Info -->
+            <div class="card file-card hidden" id="fileCard">
+                <div class="file-info">
+                    <div class="file-icon">📁</div>
+                    <div class="file-details">
+                        <span class="file-name" id="fileName">document.pdf</span>
+                        <span class="file-size" id="fileSize">2.1 MB</span>
+                    </div>
+                    <button class="btn btn-remove" id="removeFile" title="Remove file">✕</button>
+                </div>
+                <button class="btn btn-primary" id="processBtn">
+                    <span class="btn-icon">⚡</span>
+                    Process Document
+                </button>
+            </div>
+
+            <!-- Processing -->
+            <div class="card processing-card hidden" id="processingCard">
+                <div class="processing-content">
+                    <div class="spinner"></div>
+                    <h3>Processing your document...</h3>
+                    <p id="processingStatus">Extracting text with OCR</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="card result-card hidden" id="resultCard">
+                <div class="result-content">
+                    <div class="success-icon">✓</div>
+                    <h3>Document Digitized Successfully!</h3>
+                    <p id="resultInfo">14 pages processed</p>
+                </div>
+                <a class="btn btn-download" id="downloadBtn" href="#" download>
+                    <span class="btn-icon">📥</span>
+                    Download Digitized PDF
+                </a>
+                <button class="btn btn-secondary" id="newUploadBtn">
+                    Process Another Document
+                </button>
+            </div>
+
+            <!-- Error -->
+            <div class="card error-card hidden" id="errorCard">
+                <div class="error-content">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Processing Failed</h3>
+                    <p id="errorMessage">An error occurred while processing your document.</p>
+                </div>
+                <button class="btn btn-secondary" id="retryBtn">Try Again</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by <strong>Mistral OCR</strong> • Medical OCR Pipeline v1.0</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
