@@ -1,101 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Form Digitizer | OCR Pipeline</title>
+    <title>MedScan | Medical Document Digitizer</title>
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <span class="logo-icon">🏥</span>
-                <h1>Medical Form Digitizer</h1>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <span class="brand-icon">🏥</span>
+                <span class="brand-name">MedScan</span>
             </div>
-            <p class="tagline">Transform handwritten medical forms into structured digital PDFs</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="#" class="nav-item" data-section="digitize">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Digitize Form</span>
+            </a>
+            <a href="#" class="nav-item" data-section="overlay">
+                <span class="nav-icon">✏️</span>
+                <span class="nav-text">Form Overlay</span>
+                <span class="nav-badge">Beta</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="powered-by">
+                Powered by <strong>Mistral OCR</strong>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Topbar -->
+        <header class="topbar">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <div class="topbar-title">
+                <span id="pageTitle">Welcome</span>
+            </div>
+            <div class="topbar-actions">
+                <a href="/docs" class="btn-icon" title="API Documentation">📚</a>
+            </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Upload Card -->
-            <div class="card upload-card" id="uploadCard">
-                <div class="dropzone" id="dropzone">
-                    <div class="dropzone-content">
-                        <div class="dropzone-icon">📄</div>
-                        <h2>Drag & drop your form here</h2>
-                        <p>or click to browse files</p>
-                        <span class="file-types">Supports: PDF, JPG, PNG</span>
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Home Section -->
+            <section class="section active" id="homeSection">
+                <div class="hero">
+                    <div class="hero-content">
+                        <div class="hero-badge">Healthcare AI</div>
+                        <h1 class="hero-title">
+                            Transform Medical Forms
+                            <span class="gradient-text">In Seconds</span>
+                        </h1>
+                        <p class="hero-subtitle">
+                            Digitize handwritten patient intake forms instantly with AI-powered OCR.
+                            No more manual data entry. No more delays.
+                        </p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary btn-lg" onclick="showSection('digitize')">
+                                <span>Start Digitizing</span>
+                                <span class="btn-arrow">→</span>
+                            </button>
+                            <a href="/docs" class="btn btn-outline btn-lg">
+                                <span>View API Docs</span>
+                            </a>
+                        </div>
                     </div>
-                    <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
-                </div>
-            </div>
-
-            <!-- File Info -->
-            <div class="card file-card hidden" id="fileCard">
-                <div class="file-info">
-                    <div class="file-icon">📁</div>
-                    <div class="file-details">
-                        <span class="file-name" id="fileName">document.pdf</span>
-                        <span class="file-size" id="fileSize">2.1 MB</span>
+                    <div class="hero-visual">
+                        <div class="hero-card">
+                            <div class="scan-animation">
+                                <div class="scan-line"></div>
+                            </div>
+                            <div class="form-preview">
+                                <div class="form-field"></div>
+                                <div class="form-field"></div>
+                                <div class="form-field short"></div>
+                                <div class="form-field"></div>
+                                <div class="form-field short"></div>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-remove" id="removeFile" title="Remove file">✕</button>
                 </div>
-                <button class="btn btn-primary" id="processBtn">
-                    <span class="btn-icon">⚡</span>
-                    Process Document
-                </button>
-            </div>
 
-            <!-- Processing -->
-            <div class="card processing-card hidden" id="processingCard">
-                <div class="processing-content">
-                    <div class="spinner"></div>
-                    <h3>Processing your document...</h3>
-                    <p id="processingStatus">Extracting text with OCR</p>
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Lightning Fast</h3>
+                        <p>Process 14-page forms in just 6 seconds</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>High Accuracy</h3>
+                        <p>Mistral's advanced OCR engine ensures precision</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📋</div>
+                        <h3>Structured Output</h3>
+                        <p>Get organized PDFs with original form structure</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>HIPAA Ready</h3>
+                        <p>Built with healthcare compliance in mind</p>
+                    </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-            </div>
+            </section>
 
-            <!-- Result -->
-            <div class="card result-card hidden" id="resultCard">
-                <div class="result-content">
-                    <div class="success-icon">✓</div>
-                    <h3>Document Digitized Successfully!</h3>
-                    <p id="resultInfo">14 pages processed</p>
+            <!-- Digitize Section -->
+            <section class="section" id="digitizeSection">
+                <div class="section-header">
+                    <h2>Digitize Medical Form</h2>
+                    <p>Upload a scanned form and get a structured PDF instantly</p>
                 </div>
-                <a class="btn btn-download" id="downloadBtn" href="#" download>
-                    <span class="btn-icon">📥</span>
-                    Download Digitized PDF
-                </a>
-                <button class="btn btn-secondary" id="newUploadBtn">
-                    Process Another Document
-                </button>
-            </div>
 
-            <!-- Error -->
-            <div class="card error-card hidden" id="errorCard">
-                <div class="error-content">
-                    <div class="error-icon">⚠️</div>
-                    <h3>Processing Failed</h3>
-                    <p id="errorMessage">An error occurred while processing your document.</p>
+                <!-- Upload Card -->
+                <div class="card upload-card" id="uploadCard">
+                    <div class="dropzone" id="dropzone">
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon">📄</div>
+                            <h3>Drag & drop your form here</h3>
+                            <p>or click to browse files</p>
+                            <span class="file-types">Supports: PDF, JPG, PNG</span>
+                        </div>
+                        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                    </div>
                 </div>
-                <button class="btn btn-secondary" id="retryBtn">Try Again</button>
-            </div>
+
+                <!-- File Info -->
+                <div class="card file-card hidden" id="fileCard">
+                    <div class="file-info">
+                        <div class="file-icon">📁</div>
+                        <div class="file-details">
+                            <span class="file-name" id="fileName">document.pdf</span>
+                            <span class="file-size" id="fileSize">2.1 MB</span>
+                        </div>
+                        <button class="btn btn-remove" id="removeFile" title="Remove file">✕</button>
+                    </div>
+                    <button class="btn btn-primary" id="processBtn">
+                        <span class="btn-icon">⚡</span>
+                        Process Document
+                    </button>
+                </div>
+
+                <!-- Processing -->
+                <div class="card processing-card hidden" id="processingCard">
+                    <div class="processing-content">
+                        <div class="spinner"></div>
+                        <h3>Processing your document...</h3>
+                        <p id="processingStatus">Extracting text with OCR</p>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div class="card result-card hidden" id="resultCard">
+                    <div class="result-content">
+                        <div class="success-icon">✓</div>
+                        <h3>Document Digitized Successfully!</h3>
+                        <p id="resultInfo">14 pages processed</p>
+                    </div>
+                    <a class="btn btn-download" id="downloadBtn" href="#" download>
+                        <span class="btn-icon">📥</span>
+                        Download Digitized PDF
+                    </a>
+                    <button class="btn btn-secondary" id="newUploadBtn">
+                        Process Another Document
+                    </button>
+                </div>
+
+                <!-- Error -->
+                <div class="card error-card hidden" id="errorCard">
+                    <div class="error-content">
+                        <div class="error-icon">⚠️</div>
+                        <h3>Processing Failed</h3>
+                        <p id="errorMessage">An error occurred while processing your document.</p>
+                    </div>
+                    <button class="btn btn-secondary" id="retryBtn">Try Again</button>
+                </div>
+            </section>
+
+            <!-- Overlay Section (Under Development) -->
+            <section class="section" id="overlaySection">
+                <div class="section-header">
+                    <h2>Form Overlay <span class="badge-inline">Under Development</span></h2>
+                    <p>Fill existing PDF templates with extracted data</p>
+                </div>
+
+                <div class="card coming-soon-card">
+                    <div class="coming-soon-content">
+                        <div class="coming-soon-icon">🚧</div>
+                        <h3>Coming Soon</h3>
+                        <p>This feature is currently under development. Soon you'll be able to:</p>
+                        <ul class="feature-list">
+                            <li>✨ Upload a blank PDF template</li>
+                            <li>✨ Extract data from a filled form</li>
+                            <li>✨ Overlay extracted data onto the template</li>
+                            <li>✨ Download a perfectly aligned filled form</li>
+                        </ul>
+                        <div class="coming-soon-cta">
+                            <button class="btn btn-outline" onclick="showSection('digitize')">
+                                Try Digitize Feature Instead
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>Powered by <strong>Mistral OCR</strong> • Medical OCR Pipeline v1.0</p>
-        </footer>
     </div>
 
     <script src="/static/app.js"></script>
 </body>
+
 </html>

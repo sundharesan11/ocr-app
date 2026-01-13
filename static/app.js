@@ -1,9 +1,20 @@
 /**
- * Medical Form Digitizer - Frontend Application
- * Handles file upload, API calls, and PDF download
+ * MedScan - Enhanced Medical Form Digitizer
+ * Handles navigation, file upload, API calls, and PDF download
  */
 
-// DOM Elements
+// DOM Elements - Navigation
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menuToggle');
+const navItems = document.querySelectorAll('.nav-item');
+const pageTitle = document.getElementById('pageTitle');
+
+// DOM Elements - Sections
+const homeSection = document.getElementById('homeSection');
+const digitizeSection = document.getElementById('digitizeSection');
+const overlaySection = document.getElementById('overlaySection');
+
+// DOM Elements - Upload
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const uploadCard = document.getElementById('uploadCard');
@@ -26,9 +37,71 @@ const retryBtn = document.getElementById('retryBtn');
 // State
 let selectedFile = null;
 let downloadUrl = null;
+let currentSection = 'home';
 
 // API endpoint
 const API_URL = '/api/v1/process/generate';
+
+// Section titles
+const sectionTitles = {
+    'home': 'Welcome',
+    'digitize': 'Digitize Medical Form',
+    'overlay': 'Form Overlay'
+};
+
+// Navigation
+function showSection(sectionId) {
+    currentSection = sectionId;
+
+    // Update nav items
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.section === sectionId) {
+            item.classList.add('active');
+        }
+    });
+
+    // Update page title
+    pageTitle.textContent = sectionTitles[sectionId] || 'MedScan';
+
+    // Show/hide sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    const targetSection = document.getElementById(sectionId + 'Section');
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+    // Close mobile sidebar
+    sidebar.classList.remove('open');
+}
+
+// Make showSection global for onclick handlers
+window.showSection = showSection;
+
+// Nav item clicks
+navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection(item.dataset.section);
+    });
+});
+
+// Mobile menu toggle
+menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+});
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('open');
+        }
+    }
+});
 
 // Utility functions
 function formatFileSize(bytes) {
@@ -46,7 +119,7 @@ function showCard(card) {
     card.classList.remove('hidden');
 }
 
-function resetState() {
+function resetUploadState() {
     selectedFile = null;
     if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
@@ -92,7 +165,7 @@ dropzone.addEventListener('dragleave', (e) => {
 dropzone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropzone.classList.remove('dragover');
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
         handleFile(files[0]);
@@ -112,7 +185,7 @@ fileInput.addEventListener('change', (e) => {
 
 // Remove file
 removeFile.addEventListener('click', () => {
-    resetState();
+    resetUploadState();
 });
 
 // Process document
@@ -120,7 +193,7 @@ processBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     showCard(processingCard);
-    
+
     // Simulate progress
     let progress = 0;
     const progressInterval = setInterval(() => {
@@ -161,17 +234,17 @@ processBtn.addEventListener('click', async () => {
 
         // Get the PDF blob
         const pdfBlob = await response.blob();
-        
+
         // Create download URL
         downloadUrl = URL.createObjectURL(pdfBlob);
-        
+
         // Get page count from header
         const pageCount = response.headers.get('X-Page-Count') || 'Unknown';
-        
+
         // Update UI
         progressFill.style.width = '100%';
         resultInfo.textContent = `${pageCount} pages processed`;
-        
+
         // Set download link
         const baseName = selectedFile.name.replace(/\.[^/.]+$/, '');
         downloadBtn.href = downloadUrl;
@@ -184,7 +257,7 @@ processBtn.addEventListener('click', async () => {
     } catch (error) {
         clearInterval(progressInterval);
         clearInterval(statusInterval);
-        
+
         console.error('Processing error:', error);
         errorMessage.textContent = error.message || 'An error occurred while processing your document.';
         showCard(errorCard);
@@ -193,7 +266,7 @@ processBtn.addEventListener('click', async () => {
 
 // New upload
 newUploadBtn.addEventListener('click', () => {
-    resetState();
+    resetUploadState();
 });
 
 // Retry
@@ -201,15 +274,15 @@ retryBtn.addEventListener('click', () => {
     if (selectedFile) {
         showCard(fileCard);
     } else {
-        resetState();
+        resetUploadState();
     }
 });
 
 // Keyboard accessibility
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        resetState();
+        sidebar.classList.remove('open');
     }
 });
 
-console.log('Medical Form Digitizer loaded');
+console.log('MedScan loaded');
