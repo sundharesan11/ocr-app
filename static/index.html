@@ -8,12 +8,23 @@
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Markdown parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <button class="menu-toggle" id="menuToggle">
+            <span class="menu-icon">☰</span>
+        </button>
+        <h1 class="header-title" id="pageTitle">MedScan</h1>
+        <button class="notification-btn" id="notificationBtn">
+            <span class="notification-icon">🔔</span>
+        </button>
+    </header>
+
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -35,37 +46,35 @@
         </nav>
     </aside>
 
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Main Content -->
     <div class="main-wrapper">
-        <!-- Topbar -->
-        <header class="topbar">
-            <button class="menu-toggle" id="menuToggle">☰</button>
-            <div class="topbar-title">
-                <span id="pageTitle">Welcome</span>
-            </div>
-        </header>
-
         <!-- Content Area -->
         <main class="content">
             <!-- Home Section -->
             <section class="section active" id="homeSection">
+                <!-- Badge -->
+                <div class="healthcare-badge">
+                    <span class="badge-label">HEALTHCARE AI</span>
+                </div>
+
+                <!-- Hero -->
                 <div class="hero">
                     <div class="hero-content">
-                        <div class="hero-badge">Healthcare AI</div>
                         <h1 class="hero-title">
-                            Transform Medical Forms
-                            <span class="gradient-text">In Seconds</span>
+                            Transform
+                            <span class="gradient-text">Healthcare Data</span>
+                            with AI
                         </h1>
                         <p class="hero-subtitle">
-                            Digitize handwritten patient intake forms instantly with AI-powered OCR.
-                            No more manual data entry.
+                            Digitize medical forms into structured data in seconds with enterprise-grade security.
                         </p>
-                        <div class="hero-actions">
-                            <button class="btn btn-primary btn-lg" onclick="showSection('digitize')">
-                                <span>Start Digitizing</span>
-                                <span class="btn-arrow">→</span>
-                            </button>
-                        </div>
+                        <button class="btn btn-primary btn-cta" onclick="showSection('digitize')">
+                            <span class="btn-icon">📋</span>
+                            <span>Start Digitizing</span>
+                        </button>
                     </div>
                     <div class="hero-visual">
                         <div class="hero-card">
@@ -83,22 +92,46 @@
                     </div>
                 </div>
 
-                <div class="features">
-                    <div class="feature-card">
-                        <h3>Lightning Fast</h3>
-                        <p>Process 14-page forms in 6 seconds</p>
+                <!-- Capabilities Section -->
+                <div class="capabilities-section">
+                    <div class="capabilities-header">
+                        <h2 class="capabilities-title">CAPABILITIES</h2>
+                        <a href="#" class="view-all-link">View all</a>
                     </div>
-                    <div class="feature-card">
-                        <h3>High Accuracy</h3>
-                        <p>AI-powered OCR ensures precision</p>
+                    <div class="capabilities-grid">
+                        <div class="capability-card">
+                            <div class="capability-icon lightning">⚡</div>
+                            <h3 class="capability-title">Lightning Fast</h3>
+                            <p class="capability-desc">Sub-second OCR processing.</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon accuracy">✓</div>
+                            <h3 class="capability-title">High Accuracy</h3>
+                            <p class="capability-desc">99.9% extraction precision.</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon structured">📋</div>
+                            <h3 class="capability-title">Structured Output</h3>
+                            <p class="capability-desc">Organized PDFs with form structure.</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon hipaa">🛡️</div>
+                            <h3 class="capability-title">HIPAA Ready</h3>
+                            <p class="capability-desc">Built for healthcare compliance.</p>
+                        </div>
                     </div>
-                    <div class="feature-card">
-                        <h3>Structured Output</h3>
-                        <p>Organized PDFs with form structure</p>
+                </div>
+
+                <!-- Stats Banner -->
+                <div class="stats-banner">
+                    <div class="stat-item">
+                        <span class="stat-value">1.2M+</span>
+                        <span class="stat-label">Documents processed this month</span>
                     </div>
-                    <div class="feature-card">
-                        <h3>HIPAA Ready</h3>
-                        <p>Built for healthcare compliance</p>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-value">98%</span>
+                        <span class="stat-label">Time saved on average</span>
                     </div>
                 </div>
             </section>
@@ -106,42 +139,87 @@
             <!-- Digitize Section -->
             <section class="section" id="digitizeSection">
                 <div class="section-header">
-                    <h2>Digitize Medical Form</h2>
-                    <p>Upload a scanned form and preview the extracted content</p>
+                    <h2 class="section-title">Digitize New Document</h2>
+                    <p class="section-subtitle">Upload medical records, prescriptions, or lab results for AI-powered OCR
+                        analysis.</p>
                 </div>
 
-                <!-- Upload Card -->
-                <div class="card upload-card" id="uploadCard">
-                    <div class="dropzone" id="dropzone">
-                        <div class="dropzone-content">
-                            <h3>Drag & drop your form here</h3>
-                            <p>or click to browse files</p>
-                            <span class="file-types">PDF, JPG, PNG</span>
+                <!-- Main Upload Container -->
+                <div class="upload-container" id="uploadContainer">
+                    <!-- Left: Dropzone -->
+                    <div class="dropzone-wrapper">
+                        <div class="dropzone" id="dropzone">
+                            <div class="dropzone-icon">
+                                <span class="folder-icon">📁</span>
+                                <span class="upload-arrow-icon">⬆</span>
+                            </div>
+                            <p class="dropzone-text">Drag and drop files here</p>
+                            <p class="dropzone-divider">- OR -</p>
+                            <button class="btn btn-browse" type="button">Browse Files</button>
+                            <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
                         </div>
-                        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" hidden>
+                    </div>
+
+                    <!-- Right: Uploaded Files -->
+                    <div class="uploaded-files-wrapper">
+                        <h3 class="uploaded-files-title">Uploaded Files</h3>
+                        <div class="uploaded-files-list" id="uploadedFilesList">
+                            <!-- Files will be added here dynamically -->
+                            <div class="uploaded-file-empty" id="uploadedFileEmpty">
+                                <p>No files uploaded yet</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- File Info -->
+                <!-- File Info (shown after file selected) -->
                 <div class="card file-card hidden" id="fileCard">
                     <div class="file-info">
+                        <div class="file-icon">
+                            <span class="pdf-icon">📄</span>
+                        </div>
                         <div class="file-details">
                             <span class="file-name" id="fileName">document.pdf</span>
-                            <span class="file-size" id="fileSize">2.1 MB</span>
+                            <span class="file-meta" id="fileSize">2.1 MB • Ready to process</span>
                         </div>
-                        <button class="btn btn-remove" id="removeFile" title="Remove file">✕</button>
+                        <button class="btn btn-remove" id="removeFile" title="Remove file">
+                            <span>✕</span>
+                        </button>
                     </div>
-                    <button class="btn btn-primary" id="processBtn">
-                        Process Document
-                    </button>
+                    <div class="file-progress-bar">
+                        <div class="file-progress-fill" id="fileProgressFill"></div>
+                    </div>
                 </div>
+
+                <!-- Process Button -->
+                <button class="btn btn-primary btn-process hidden" id="processBtn">
+                    <span class="btn-icon">✨</span>
+                    <span>Start AI Digitization</span>
+                </button>
+
+                <!-- HIPAA Disclaimer -->
+                <p class="hipaa-disclaimer hidden" id="hipaaDisclaimer">
+                    By uploading, you confirm this document adheres to HIPAA privacy standards and our Terms of Service.
+                </p>
 
                 <!-- Processing -->
                 <div class="card processing-card hidden" id="processingCard">
+                    <div class="processing-visual">
+                        <div class="document-scan">
+                            <div class="scan-document">
+                                <div class="scan-icon">🔍</div>
+                            </div>
+                            <div class="scan-beam"></div>
+                        </div>
+                    </div>
                     <div class="processing-content">
-                        <div class="spinner"></div>
-                        <h3>Processing your document...</h3>
-                        <p id="processingStatus">Extracting text with OCR</p>
+                        <h3 class="processing-title">Extracting text with OCR...</h3>
+                        <p class="processing-status" id="processingStatus">AI is analyzing your document for medical
+                            data extraction</p>
+                    </div>
+                    <div class="progress-container">
+                        <span class="progress-label">Extraction Progress</span>
+                        <span class="progress-percent" id="progressPercent">0%</span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
@@ -151,47 +229,68 @@
                 <!-- Result with Preview -->
                 <div class="card result-card hidden" id="resultCard">
                     <div class="result-header">
-                        <h3>Document Digitized</h3>
-                        <p id="resultInfo">14 pages processed</p>
+                        <span class="result-icon">✓</span>
+                        <h3 class="result-title">Extraction Complete</h3>
                     </div>
 
                     <!-- Preview Tabs -->
                     <div class="preview-container">
                         <div class="preview-tabs">
                             <button class="preview-tab active" data-tab="markdown">Markdown</button>
-                            <button class="preview-tab" data-tab="pdf">PDF Preview</button>
+                            <button class="preview-tab" data-tab="pdf">PDF Original</button>
                         </div>
                         <div class="preview-content">
+                            <div class="result-meta">
+                                <span class="result-type">CLINICAL NOTE</span>
+                                <button class="copy-btn" id="copyBtn" title="Copy to clipboard">📋</button>
+                            </div>
+                            <p class="result-timestamp" id="resultTimestamp">Extracted at --:-- PM</p>
                             <div id="markdownPreview" class="markdown-preview"></div>
                             <iframe id="pdfPreview" class="pdf-preview hidden"></iframe>
                         </div>
                     </div>
 
-                    <div style="margin-top: 1rem;">
-                        <a class="btn btn-download" id="downloadBtn" href="#" download>
-                            Download PDF
-                        </a>
-                        <button class="btn btn-secondary" id="newUploadBtn">
-                            Process Another
+                    <div class="result-actions">
+                        <button class="btn btn-primary btn-new" id="newUploadBtn">
+                            <span class="btn-icon">+</span>
+                            <span>Process Another</span>
                         </button>
+                        <a class="btn btn-outline btn-download" id="downloadBtn" href="#" download>
+                            <span class="btn-icon">⬇</span>
+                            <span>Download PDF</span>
+                        </a>
                     </div>
                 </div>
 
                 <!-- Error -->
                 <div class="card error-card hidden" id="errorCard">
                     <div class="error-content">
+                        <span class="error-icon">⚠️</span>
                         <h3>Processing Failed</h3>
                         <p id="errorMessage">An error occurred while processing your document.</p>
                     </div>
                     <button class="btn btn-secondary" id="retryBtn">Try Again</button>
+                </div>
+
+                <!-- OCR Tips -->
+                <div class="ocr-tips" id="ocrTips">
+                    <h4 class="tips-title">OCR Tips for Best Results</h4>
+                    <div class="tip-item">
+                        <span class="tip-icon">✓</span>
+                        <span class="tip-text">Ensure text is clear and well-lit.</span>
+                    </div>
+                    <div class="tip-item">
+                        <span class="tip-icon">✓</span>
+                        <span class="tip-text">Avoid shadows or excessive glare on papers.</span>
+                    </div>
                 </div>
             </section>
 
             <!-- Overlay Section -->
             <section class="section" id="overlaySection">
                 <div class="section-header">
-                    <h2>Form Overlay</h2>
-                    <p>Fill existing PDF templates with extracted data</p>
+                    <h2 class="section-title">Form Overlay</h2>
+                    <p class="section-subtitle">Fill existing PDF templates with extracted data</p>
                 </div>
 
                 <div class="card coming-soon-card">

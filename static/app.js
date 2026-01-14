@@ -5,6 +5,7 @@
 
 // DOM Elements - Navigation
 const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 const menuToggle = document.getElementById('menuToggle');
 const navItems = document.querySelectorAll('.nav-item');
 const pageTitle = document.getElementById('pageTitle');
@@ -17,22 +18,29 @@ const overlaySection = document.getElementById('overlaySection');
 // DOM Elements - Upload
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
-const uploadCard = document.getElementById('uploadCard');
+const uploadContainer = document.getElementById('uploadContainer');
 const fileCard = document.getElementById('fileCard');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
 const removeFile = document.getElementById('removeFile');
+const browseBtn = document.querySelector('.btn-browse');
+const uploadedFilesList = document.getElementById('uploadedFilesList');
+const uploadedFileEmpty = document.getElementById('uploadedFileEmpty');
 const processBtn = document.getElementById('processBtn');
+const hipaaDisclaimer = document.getElementById('hipaaDisclaimer');
 const processingCard = document.getElementById('processingCard');
 const processingStatus = document.getElementById('processingStatus');
 const progressFill = document.getElementById('progressFill');
+const progressPercent = document.getElementById('progressPercent');
 const resultCard = document.getElementById('resultCard');
-const resultInfo = document.getElementById('resultInfo');
+const resultTimestamp = document.getElementById('resultTimestamp');
 const downloadBtn = document.getElementById('downloadBtn');
 const newUploadBtn = document.getElementById('newUploadBtn');
+const copyBtn = document.getElementById('copyBtn');
 const errorCard = document.getElementById('errorCard');
 const errorMessage = document.getElementById('errorMessage');
 const retryBtn = document.getElementById('retryBtn');
+const ocrTips = document.getElementById('ocrTips');
 
 // Preview Elements
 const markdownPreview = document.getElementById('markdownPreview');
@@ -50,8 +58,8 @@ const API_URL = '/api/v1/process/preview';
 
 // Section titles
 const sectionTitles = {
-    'home': 'Welcome',
-    'digitize': 'Digitize Medical Form',
+    'home': 'MedScan',
+    'digitize': 'Upload Document',
     'overlay': 'Form Overlay'
 };
 
@@ -81,11 +89,30 @@ function showSection(sectionId) {
     }
 
     // Close mobile sidebar
-    sidebar.classList.remove('open');
+    closeSidebar();
+
+    // Reset upload state when entering digitize section
+    if (sectionId === 'digitize') {
+        // Show OCR tips
+        ocrTips.classList.remove('hidden');
+    }
 }
 
 // Make showSection global for onclick handlers
 window.showSection = showSection;
+
+// Sidebar functions
+function openSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
 
 // Nav item clicks
 navItems.forEach(item => {
@@ -97,17 +124,15 @@ navItems.forEach(item => {
 
 // Mobile menu toggle
 menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-});
-
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768) {
-        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-            sidebar.classList.remove('open');
-        }
+    if (sidebar.classList.contains('open')) {
+        closeSidebar();
+    } else {
+        openSidebar();
     }
 });
+
+// Close sidebar when clicking overlay
+sidebarOverlay.addEventListener('click', closeSidebar);
 
 // Preview tab switching
 previewTabs.forEach(tab => {
@@ -136,13 +161,71 @@ function formatFileSize(bytes) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function showCard(card) {
-    // Hide all cards
-    [uploadCard, fileCard, processingCard, resultCard, errorCard].forEach(c => {
-        c.classList.add('hidden');
+function formatTime(date) {
+    return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
     });
-    // Show target card
-    card.classList.remove('hidden');
+}
+
+function showUploadState() {
+    uploadContainer.classList.remove('hidden');
+    fileCard.classList.add('hidden');
+    processBtn.classList.add('hidden');
+    hipaaDisclaimer.classList.add('hidden');
+    processingCard.classList.add('hidden');
+    resultCard.classList.add('hidden');
+    errorCard.classList.add('hidden');
+    if (ocrTips) ocrTips.classList.remove('hidden');
+    // Reset uploaded files list
+    if (uploadedFileEmpty) uploadedFileEmpty.classList.remove('hidden');
+}
+
+function showFileState() {
+    uploadContainer.classList.remove('hidden');
+    fileCard.classList.remove('hidden');
+    processBtn.classList.remove('hidden');
+    hipaaDisclaimer.classList.remove('hidden');
+    processingCard.classList.add('hidden');
+    resultCard.classList.add('hidden');
+    errorCard.classList.add('hidden');
+    if (ocrTips) ocrTips.classList.remove('hidden');
+    // Hide empty state
+    if (uploadedFileEmpty) uploadedFileEmpty.classList.add('hidden');
+}
+
+function showProcessingState() {
+    uploadContainer.classList.add('hidden');
+    fileCard.classList.add('hidden');
+    processBtn.classList.add('hidden');
+    hipaaDisclaimer.classList.add('hidden');
+    processingCard.classList.remove('hidden');
+    resultCard.classList.add('hidden');
+    errorCard.classList.add('hidden');
+    if (ocrTips) ocrTips.classList.add('hidden');
+}
+
+function showResultState() {
+    uploadContainer.classList.add('hidden');
+    fileCard.classList.add('hidden');
+    processBtn.classList.add('hidden');
+    hipaaDisclaimer.classList.add('hidden');
+    processingCard.classList.add('hidden');
+    resultCard.classList.remove('hidden');
+    errorCard.classList.add('hidden');
+    if (ocrTips) ocrTips.classList.add('hidden');
+}
+
+function showErrorState() {
+    uploadContainer.classList.add('hidden');
+    fileCard.classList.add('hidden');
+    processBtn.classList.add('hidden');
+    hipaaDisclaimer.classList.add('hidden');
+    processingCard.classList.add('hidden');
+    resultCard.classList.add('hidden');
+    errorCard.classList.remove('hidden');
+    if (ocrTips) ocrTips.classList.add('hidden');
 }
 
 function resetUploadState() {
@@ -153,9 +236,23 @@ function resetUploadState() {
         downloadUrl = null;
     }
     progressFill.style.width = '0%';
+    progressPercent.textContent = '0%';
     markdownPreview.innerHTML = '';
     pdfPreview.src = '';
-    showCard(uploadCard);
+
+    // Clear uploaded files list
+    if (uploadedFilesList) {
+        const existingItems = uploadedFilesList.querySelectorAll('.uploaded-file-item');
+        existingItems.forEach(item => item.remove());
+    }
+    if (uploadedFileEmpty) uploadedFileEmpty.classList.remove('hidden');
+
+    // Hide process button and disclaimer
+    processBtn.classList.add('hidden');
+    hipaaDisclaimer.classList.add('hidden');
+
+    // Show upload container
+    uploadContainer.classList.remove('hidden');
 }
 
 // Render markdown to HTML
@@ -175,6 +272,7 @@ function renderMarkdown(markdown) {
         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
         .replace(/^\* (.*$)/gim, '<li>$1</li>')
         .replace(/^\- (.*$)/gim, '<li>$1</li>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>');
 }
 
@@ -187,17 +285,59 @@ function handleFile(file) {
         return;
     }
 
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
+    // Validate file size (max 10MB as per design)
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-        alert('File size must be less than 50MB.');
+        alert('File size must be less than 10MB.');
         return;
     }
 
     selectedFile = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatFileSize(file.size);
-    showCard(fileCard);
+
+    // Hide empty state
+    if (uploadedFileEmpty) uploadedFileEmpty.classList.add('hidden');
+
+    // Add file to the uploaded files list on the right
+    addFileToUploadedList(file);
+
+    // Show process button and disclaimer
+    processBtn.classList.remove('hidden');
+    hipaaDisclaimer.classList.remove('hidden');
+}
+
+// Add file to the uploaded files list
+function addFileToUploadedList(file) {
+    // Clear existing files (single file mode)
+    const existingItems = uploadedFilesList.querySelectorAll('.uploaded-file-item');
+    existingItems.forEach(item => item.remove());
+
+    // Get file extension for icon
+    const ext = file.name.split('.').pop().toLowerCase();
+    let iconClass = 'pdf';
+    if (['jpg', 'jpeg', 'png'].includes(ext)) iconClass = 'img';
+
+    // Create file item
+    const fileItem = document.createElement('div');
+    fileItem.className = 'uploaded-file-item';
+    fileItem.id = 'currentFileItem';
+    fileItem.innerHTML = `
+        <div class="uploaded-file-icon ${iconClass}">${ext.toUpperCase()}</div>
+        <div class="uploaded-file-info">
+            <span class="uploaded-file-name">${file.name}</span>
+            <div class="uploaded-file-progress">
+                <div class="uploaded-file-progress-fill success" style="width: 100%"></div>
+            </div>
+        </div>
+        <span class="uploaded-file-status cancel" id="cancelFileBtn">Cancel</span>
+    `;
+
+    uploadedFilesList.appendChild(fileItem);
+
+    // Add cancel button handler
+    const cancelBtn = fileItem.querySelector('#cancelFileBtn');
+    cancelBtn.addEventListener('click', () => {
+        resetUploadState();
+    });
 }
 
 // Drag & Drop
@@ -237,32 +377,49 @@ removeFile.addEventListener('click', () => {
     resetUploadState();
 });
 
+// Copy to clipboard
+copyBtn.addEventListener('click', async () => {
+    if (rawMarkdown) {
+        try {
+            await navigator.clipboard.writeText(rawMarkdown);
+            copyBtn.textContent = '✓';
+            setTimeout(() => {
+                copyBtn.textContent = '📋';
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    }
+});
+
 // Process document
 processBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
-    showCard(processingCard);
+    showProcessingState();
 
-    // Simulate progress
+    // Progress animation
     let progress = 0;
     const progressInterval = setInterval(() => {
-        progress += Math.random() * 15;
+        progress += Math.random() * 12;
         if (progress > 90) progress = 90;
-        progressFill.style.width = progress + '%';
-    }, 500);
+        const roundedProgress = Math.round(progress);
+        progressFill.style.width = roundedProgress + '%';
+        progressPercent.textContent = roundedProgress + '%';
+    }, 400);
 
     // Update status messages
     const statusMessages = [
-        'Uploading document...',
+        'AI is analyzing your document for medical data extraction',
         'Extracting text with OCR...',
-        'Processing pages...',
-        'Generating preview...'
+        'Processing medical terminology...',
+        'Structuring extracted data...'
     ];
     let statusIndex = 0;
     const statusInterval = setInterval(() => {
         statusIndex = (statusIndex + 1) % statusMessages.length;
         processingStatus.textContent = statusMessages[statusIndex];
-    }, 2000);
+    }, 2500);
 
     try {
         const formData = new FormData();
@@ -300,7 +457,10 @@ processBtn.addEventListener('click', async () => {
 
         // Update UI
         progressFill.style.width = '100%';
-        resultInfo.textContent = `${data.page_count} pages processed`;
+        progressPercent.textContent = '100%';
+
+        // Set timestamp
+        resultTimestamp.textContent = `Extracted at ${formatTime(new Date())}`;
 
         // Set download link
         downloadBtn.href = downloadUrl;
@@ -313,7 +473,7 @@ processBtn.addEventListener('click', async () => {
         pdfPreview.classList.add('hidden');
 
         setTimeout(() => {
-            showCard(resultCard);
+            showResultState();
         }, 300);
 
     } catch (error) {
@@ -322,7 +482,7 @@ processBtn.addEventListener('click', async () => {
 
         console.error('Processing error:', error);
         errorMessage.textContent = error.message || 'An error occurred while processing your document.';
-        showCard(errorCard);
+        showErrorState();
     }
 });
 
@@ -334,7 +494,7 @@ newUploadBtn.addEventListener('click', () => {
 // Retry
 retryBtn.addEventListener('click', () => {
     if (selectedFile) {
-        showCard(fileCard);
+        showFileState();
     } else {
         resetUploadState();
     }
@@ -343,7 +503,7 @@ retryBtn.addEventListener('click', () => {
 // Keyboard accessibility
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        sidebar.classList.remove('open');
+        closeSidebar();
     }
 });
 
