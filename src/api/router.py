@@ -518,3 +518,80 @@ async def process_and_generate(
     except Exception as e:
         logger.exception("PDF generation failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/process/preview",
+    summary="Extract & Preview (with Markdown)",
+    description="""
+    Extract document and return both markdown preview and PDF.
+    
+    Returns JSON with:
+    - raw_markdown: The extracted text in markdown format for preview
+    - pdf_base64: The generated PDF as base64 string
+    - page_count: Number of pages processed
+    
+    **Best for:** Preview before download, editing markdown.
+    """,
+)
+async def process_and_preview(
+    file: UploadFile = File(..., description="Scanned form (PDF or image)"),
+) -> dict:
+    """Extract data and return markdown + PDF for preview."""
+    import base64
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Filename is required")
+
+    # Read source file
+    file_content = await file.read()
+    if not file_content:
+        raise HTTPException(status_code=400, detail="Empty file uploaded")
+
+    logger.info(
+        "Preview request",
+        filename=file.filename,
+        file_size=len(file_content),
+    )
+
+    try:
+        # Step 1: Extract document using Mistral's basic OCR
+        ocr = MistralDocumentOCR()
+        ocr_result = await ocr.process_with_basic_ocr(
+            file_content=file_content,
+            filename=file.filename,
+        )
+
+        logger.info(
+            "OCR complete for preview",
+            page_count=ocr_result.page_count,
+            text_length=len(ocr_result.raw_text),
+        )
+
+        if not ocr_result.raw_text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="No content could be extracted from the document",
+            )
+
+        # Step 2: Convert markdown to PDF
+        pdf_bytes = ocr_text_to_pdf(
+            raw_text=ocr_result.raw_text,
+            title="Medical Intake Form - Digitized",
+        )
+
+        # Generate output filename
+        base_name = file.filename.rsplit(".", 1)[0] if "." in file.filename else file.filename
+
+        return {
+            "raw_markdown": ocr_result.raw_text,
+            "pdf_base64": base64.b64encode(pdf_bytes).decode("utf-8"),
+            "page_count": ocr_result.page_count,
+            "filename": f"{base_name}_digitized.pdf",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Preview generation failed")
+        raise HTTPException(status_code=500, detail=str(e))

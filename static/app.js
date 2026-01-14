@@ -1,6 +1,6 @@
 /**
- * MedScan - Enhanced Medical Form Digitizer
- * Handles navigation, file upload, API calls, and PDF download
+ * MedScan - Medical Form Digitizer
+ * Handles navigation, file upload, API calls, and preview
  */
 
 // DOM Elements - Navigation
@@ -34,13 +34,19 @@ const errorCard = document.getElementById('errorCard');
 const errorMessage = document.getElementById('errorMessage');
 const retryBtn = document.getElementById('retryBtn');
 
+// Preview Elements
+const markdownPreview = document.getElementById('markdownPreview');
+const pdfPreview = document.getElementById('pdfPreview');
+const previewTabs = document.querySelectorAll('.preview-tab');
+
 // State
 let selectedFile = null;
 let downloadUrl = null;
 let currentSection = 'home';
+let rawMarkdown = '';
 
-// API endpoint
-const API_URL = '/api/v1/process/generate';
+// API endpoint - using preview endpoint for markdown + PDF
+const API_URL = '/api/v1/process/preview';
 
 // Section titles
 const sectionTitles = {
@@ -103,6 +109,26 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Preview tab switching
+previewTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+
+        // Update tab styles
+        previewTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Show/hide content
+        if (tabName === 'markdown') {
+            markdownPreview.classList.remove('hidden');
+            pdfPreview.classList.add('hidden');
+        } else {
+            markdownPreview.classList.add('hidden');
+            pdfPreview.classList.remove('hidden');
+        }
+    });
+});
+
 // Utility functions
 function formatFileSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -121,12 +147,35 @@ function showCard(card) {
 
 function resetUploadState() {
     selectedFile = null;
+    rawMarkdown = '';
     if (downloadUrl) {
         URL.revokeObjectURL(downloadUrl);
         downloadUrl = null;
     }
     progressFill.style.width = '0%';
+    markdownPreview.innerHTML = '';
+    pdfPreview.src = '';
     showCard(uploadCard);
+}
+
+// Render markdown to HTML
+function renderMarkdown(markdown) {
+    if (typeof marked !== 'undefined') {
+        // Configure marked for better rendering
+        marked.setOptions({
+            breaks: true,  // Convert \n to <br>
+            gfm: true,     // Enable GitHub Flavored Markdown
+        });
+        return marked.parse(markdown);
+    }
+    // Fallback: simple markdown rendering
+    return markdown
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^\* (.*$)/gim, '<li>$1</li>')
+        .replace(/^\- (.*$)/gim, '<li>$1</li>')
+        .replace(/\n/g, '<br>');
 }
 
 // File handling
@@ -207,7 +256,7 @@ processBtn.addEventListener('click', async () => {
         'Uploading document...',
         'Extracting text with OCR...',
         'Processing pages...',
-        'Generating PDF...'
+        'Generating preview...'
     ];
     let statusIndex = 0;
     const statusInterval = setInterval(() => {
@@ -232,27 +281,40 @@ processBtn.addEventListener('click', async () => {
             throw new Error(errorData.detail || 'Processing failed');
         }
 
-        // Get the PDF blob
-        const pdfBlob = await response.blob();
+        // Get JSON response with markdown and PDF
+        const data = await response.json();
 
-        // Create download URL
+        // Store raw markdown
+        rawMarkdown = data.raw_markdown;
+
+        // Render markdown preview
+        markdownPreview.innerHTML = renderMarkdown(rawMarkdown);
+
+        // Create PDF blob from base64 and set preview
+        const pdfBytes = Uint8Array.from(atob(data.pdf_base64), c => c.charCodeAt(0));
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
         downloadUrl = URL.createObjectURL(pdfBlob);
 
-        // Get page count from header
-        const pageCount = response.headers.get('X-Page-Count') || 'Unknown';
+        // Set PDF preview
+        pdfPreview.src = downloadUrl;
 
         // Update UI
         progressFill.style.width = '100%';
-        resultInfo.textContent = `${pageCount} pages processed`;
+        resultInfo.textContent = `${data.page_count} pages processed`;
 
         // Set download link
-        const baseName = selectedFile.name.replace(/\.[^/.]+$/, '');
         downloadBtn.href = downloadUrl;
-        downloadBtn.download = `${baseName}_digitized.pdf`;
+        downloadBtn.download = data.filename;
+
+        // Reset to markdown tab
+        previewTabs.forEach(t => t.classList.remove('active'));
+        previewTabs[0].classList.add('active');
+        markdownPreview.classList.remove('hidden');
+        pdfPreview.classList.add('hidden');
 
         setTimeout(() => {
             showCard(resultCard);
-        }, 500);
+        }, 300);
 
     } catch (error) {
         clearInterval(progressInterval);
