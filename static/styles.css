@@ -1063,7 +1063,7 @@ body {
     background: var(--muted);
     border-radius: var(--radius);
     padding: 1rem;
-    max-height: 350px;
+    max-height: 600px;
     overflow-y: auto;
 }
 
@@ -1150,7 +1150,7 @@ body {
 
 .pdf-preview {
     width: 100%;
-    height: 350px;
+    height: 600px;
     border: none;
     border-radius: var(--radius-sm);
 }
@@ -1172,7 +1172,9 @@ body {
 }
 
 .btn-download:hover {
-    background: var(--muted);
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 /* Error */
